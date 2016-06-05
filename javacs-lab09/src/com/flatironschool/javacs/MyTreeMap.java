@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 /**
  * Implementation of a Map using a binary search tree.
@@ -73,6 +74,23 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 		
 		// the actual search
         // TODO: Fill this in.
+        if (root == null) {
+        	return null;
+        }
+        Stack<Node> nodes = new Stack<>();
+        nodes.push(root);
+        while (!nodes.isEmpty()) {
+        	Node cur = nodes.pop();
+        	if (equals(target, cur.key)) {
+        		return cur;
+        	}
+        	if (cur.left != null) {
+        		nodes.push(cur.left);
+        	}
+        	if (cur.right != null) {
+        		nodes.push(cur.right);
+        	}
+        }
         return null;
 	}
 
@@ -92,6 +110,34 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 
 	@Override
 	public boolean containsValue(Object target) {
+		// some implementations can handle null as a key, but not this one
+		if (target == null) {
+            throw new NullPointerException();
+	    }
+		
+		// something to make the compiler happy
+		@SuppressWarnings("unchecked")
+		Comparable<? super V> k = (Comparable<? super V>) target;
+		
+		// the actual search
+        // TODO: Fill this in.
+        if (root == null) {
+        	return false;
+        }
+        Stack<Node> nodes = new Stack<>();
+        nodes.push(root);
+        while (!nodes.isEmpty()) {
+        	Node cur = nodes.pop();
+        	if (equals(target, cur.value)) {
+        		return true;
+        	}
+        	if (cur.left != null) {
+        		nodes.push(cur.left);
+        	}
+        	if (cur.right != null) {
+        		nodes.push(cur.right);
+        	}
+        }
 		return false;
 	}
 
@@ -118,7 +164,20 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 	public Set<K> keySet() {
 		Set<K> set = new LinkedHashSet<K>();
         // TODO: Fill this in.
+        inOrder(root, set);
 		return set;
+	}
+
+	public void inOrder(Node node, Set<K> set) {
+		if (node.left != null) {
+			inOrder(node.left, set);
+			set.add(node.left.key);
+		}
+		set.add(node.key);
+		if (node.right != null) {
+			inOrder(node.right, set);
+			set.add(node.right.key);
+		}
 	}
 
 	@Override
@@ -136,6 +195,35 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 
 	private V putHelper(Node node, K key, V value) {
         // TODO: Fill this in.
+        if (containsKey(key)) {
+        	V prev = findNode(key).value;
+        	findNode(key).value = value;
+        	return prev;
+        } else {
+        	Comparable<? super K> k = (Comparable<? super K>) key;
+        	Stack<Node> stack = new Stack<>();
+        	stack.push(node);
+        	while (!stack.isEmpty()) {
+        		Node cur = stack.pop();
+        		if (k.compareTo(cur.key) > 0) {
+        			if (cur.right == null) {
+        				cur.right = new Node(key, value);
+        				size++;
+        				return null;
+        			} else {
+        				stack.push(cur.right);
+        			}
+        		} else {
+        			if (cur.left == null) {
+        				cur.left = new Node(key, value);
+        				size++;
+        				return null;
+        			} else {
+        				stack.push(cur.left);
+        			}
+        		}
+        	}
+        }
         return null;
 	}
 
